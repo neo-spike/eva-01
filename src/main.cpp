@@ -31,10 +31,20 @@ int main(){
     core.registerCommand("say", std::make_unique<Say>());
     core.registerCommand("help", std::make_unique<Help>(core));
     core.registerCommand("calc", std::make_unique<Calculate>());
+    core.registerCommand("time", std::make_unique<Time>());
+    core.registerCommand("clear", std::make_unique<Clear>());
+    core.registerCommand("jump", std::make_unique<ChangeDirectory>());
+    core.registerCommand("forge", std::make_unique<MakeDirectory>());
+    core.registerCommand("show", std::make_unique<Show>());
+
+    // getting credentials
+    std::string username, password;
+    username = core.getUsername();
 
     std::string command;
     while (true) {
-        std::cout << "eva-01> ";
+        std::string cwd = core.workingDirectory();
+        std::cout << "[EVA-01]::"<<username<<" " << cwd << ">";
 
         std::getline(std::cin, command);
         std::vector<std::string> args = split(command);

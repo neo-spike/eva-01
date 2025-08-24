@@ -22,6 +22,9 @@ Eva-01 features:
 - [x] help - gives list and description of all the available commands
 - [x] say - displays the texts passed as input
 - [x] calc - inline calculator
+- [x] jump - changes working directory to the given directory
+- [x] forge - creates folders 
+- [x] show - shows all the folder and files present in the working directory
 
 
 ---

@@ -6,6 +6,16 @@
 #include <unordered_set>
 #include <stack>
 #include <math.h>
+#include <ctime>
+#include <unistd.h>
+#include <dirent.h>
+#if defined(_WIN32) || defined(_WIN64)
+#include <direct.h>
+#endif
+#if defined(__linux__) || defined(__unix__) || defined(__APPLE__)
+#include <sys/stat.h>
+#include <sys/types.h>
+#endif
 
 class CentralDogma;
 
@@ -40,35 +50,59 @@ class Calculate : public TerminalDogma
 
 public:
     void execute(const std::vector<std::string> &args) override;
-    std::string description() const override { return "Can't you see it is a calculator!!"; };
+    std::string description() const override { return "Just a simple calculator."; };
     int precedence(std::string c);
     std::vector<std::string> postfix(std::vector<std::string> args);
     long double solvePostfix(std::vector<std::string> expression);
-    bool isNumber(const std::string &s)
-    {
-        if (s.empty())
-            return false;
+    bool isNumber(const std::string &s);
+    bool isLeftAssociative(char op);
+};
 
-        bool hasDecimal = false;
-        for (char c : s)
-        {
-            if (c == '.')
-            {
-                if (hasDecimal)
-                    return false;
-                hasDecimal = true;
-            }
-            else if (!isdigit(c))
-            {
-                return false;
-            }
-        }
-        return true;
-    }
-    bool isLeftAssociative(char op)
+class Time : public TerminalDogma
+{
+public:
+    void execute(const std::vector<std::string> &args) override;
+    std::string description() const override { return "It just shows you the time."; };
+};
+
+class Clear : public TerminalDogma
+{
+public:
+    void execute(const std::vector<std::string> &args) override;
+    std::string description() const override { return "Clears the console."; };
+};
+
+class MakeDirectory : public TerminalDogma
+{
+public:
+    void execute(const std::vector<std::string> &args) override;
+    std::string description() const override
     {
-        if (op == '^')
-            return false; 
-        return true;      
-    }
+#if defined(_WIN32) || defined(_WIN64)
+        return "It makes directory. Command - forge <directory>";
+#else
+        return "It makes directory. Command - forge [-a|-s] <directory>";
+#endif
+    };
+    std::vector<std::string> splitPath(const std::string &path);
+};
+
+class ChangeDirectory : public TerminalDogma
+{
+public:
+    void execute(const std::vector<std::string> &args) override;
+    std::string description() const override { return "Changes the directory to the given directory."; };
+};
+
+class DeleteDirectory : public TerminalDogma
+{
+    public:
+    void execute(const std::vector<std::string> &args) override;
+    std::string description() const override { return "Changes the directory to the given directory."; };
+};
+
+class Show : public TerminalDogma{
+public:
+    void execute(const std::vector<std::string> &args) override;
+    std::string description() const override { return "Changes the directory to the given directory."; };
 };

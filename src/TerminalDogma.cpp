@@ -20,6 +20,35 @@ void Help::execute(const std::vector<std::string> &args)
     }
 }
 
+bool Calculate::isNumber(const std::string &s)
+{
+    if (s.empty())
+        return false;
+
+    bool hasDecimal = false;
+    for (char c : s)
+    {
+        if (c == '.')
+        {
+            if (hasDecimal)
+                return false;
+            hasDecimal = true;
+        }
+        else if (!isdigit(c))
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool Calculate::isLeftAssociative(char op)
+{
+    if (op == '^')
+        return false;
+    return true;
+}
+
 int Calculate::precedence(std::string c)
 {
     if (c == "^")
@@ -133,128 +162,299 @@ long double Calculate::solvePostfix(std::vector<std::string> expression)
 
 void Calculate::execute(const std::vector<std::string> &args)
 {
-    bool safety = true;
     std::string expression;
-
-    long long nbraces = 0, ops = 0;
-
     for (int i = 1; i < args.size(); i++)
     {
         expression += args[i];
     }
 
-    std::vector<std::string> tokens;
-    std::string token = "";
-
-    int i = 0;
-    while (i < expression.size())
+    if (expression.size() > 2)
     {
-        if (expression[i] == '(' || expression[i] == ')' || operators.count(expression[i]))
+
+        bool safety = true;
+        long long nbraces = 0;
+
+        // tokens vector after filtering user input
+        std::vector<std::string> tokens;
+        std::string token = "";
+
+        int i = 0;
+        while (i < expression.size() && safety)
         {
-            token += expression[i];
-            tokens.push_back(token);
-            if (expression[i] == '(' || expression[i] == ')')
+            if ((expression[i] >= '0' && expression[i] <= '9') || expression[i] == '.')
             {
-                nbraces++;
+                while (!operators.count(expression[i]) && (expression[i] != '(') && (expression[i] != ')') && i < expression.size())
+                {
+                    token += expression[i];
+                    i++;
+                }
+                safety = isNumber(token);
+                if (safety)
+                {
+                    tokens.push_back(token);
+                }
+                token = "";
             }
-            token = "";
-            i++;
-        }
-        else if ((expression[i] >= '0' && expression[i] <= '9') || expression[i] == '.')
-        {
-            while (!operators.count(expression[i]) && (expression[i] != '(') && (expression[i] != ')') && i < expression.size())
+            else if (expression[i] == '(' || expression[i] == ')' || operators.count(expression[i]))
             {
                 token += expression[i];
-                i++;
-            }
-            if (isNumber(token))
-            {
                 tokens.push_back(token);
+                if (expression[i] == '(' || expression[i] == ')')
+                {
+                    nbraces++;
+                }
+
+                token = "";
+                i++;
             }
             else
             {
                 safety = false;
                 break;
             }
-            token = "";
+        }
+
+        // validating signs and brackets
+        if (nbraces % 2 != 0)
+        {
+            safety = false;
         }
         else
         {
-            safety = false;
-            break;
-        }
-    }
-
-    if (nbraces % 2 != 0)
-    {
-        safety = false;
-    }
-    else if (tokens.size() <= 2)
-    {
-        safety = false;
-    }
-    else
-    {
-        for (int i = 0; i < tokens.size() - 1; i++)
-        {
-            if (tokens[i] == "/" && tokens[i + 1] == "0")
+            for (int i = 0; i < tokens.size() - 1; i++)
             {
-                safety = false;
-                break;
-            }
-            // handling negative sign before making the safety falls for other cases
-            else if (tokens[i] == "-")
-            {
-                if (i == 0 || (tokens[i - 1] == "(" && i > 0))
-                {
-                    tokens.insert(tokens.begin() + i, "0");
-                }
-                else if (operators.count(tokens[i - 1][0]) && tokens[i - 1] != "-")
-                {
-                    tokens.insert(tokens.begin() + i, "(");
-                    tokens.insert(tokens.begin() + i + 1, "0");
-                    int k = i + 3;
-
-                    while (k < tokens.size() &&
-                           !operators.count(tokens[k][0]) && tokens[k] != ")" && tokens[k] != "(" && tokens[k]!=".")
-                    {
-                        k++;
-                    }
-
-                    tokens.insert(tokens.begin() + k, ")");
-                }
-                else if (operators.count(tokens[i + 1][0]))
+                if (tokens[i] == "/" && tokens[i + 1] == "0")
                 {
                     safety = false;
                     break;
                 }
-                continue;
+                // handling negative sign before making the safety false for other cases
+                else if (tokens[i] == "-")
+                {
+                    if (i == 0 || (tokens[i - 1] == "(" && i > 0))
+                    {
+                        tokens.insert(tokens.begin() + i, "0");
+                    }
+                    else if (operators.count(tokens[i - 1][0]) && tokens[i - 1] != "-")
+                    {
+                        tokens.insert(tokens.begin() + i, "(");
+                        tokens.insert(tokens.begin() + i + 1, "0");
+                        int k = i + 3;
+
+                        while (k < tokens.size() &&
+                               !operators.count(tokens[k][0]) && tokens[k] != ")" && tokens[k] != "(" && tokens[k] != ".")
+                        {
+                            k++;
+                        }
+
+                        tokens.insert(tokens.begin() + k, ")");
+                    }
+                    else if (operators.count(tokens[i + 1][0]))
+                    {
+                        safety = false;
+                        break;
+                    }
+                    continue;
+                }
+                else if (operators.count(tokens[0][0]) && tokens[i] != "-")
+                {
+                    safety = false;
+                }
+                else if (operators.count(tokens[tokens.size() - 1][0]))
+                {
+                    safety = false;
+                }
+                else if (operators.count(tokens[i][0]) && operators.count(tokens[i + 1][0]) && tokens[i + 1] != "-")
+                {
+                    safety = false;
+                }
+                else if ((operators.count(tokens[i][0]) && (tokens[i + 1] == ")")) || (tokens[i] == "(") && operators.count(tokens[i + 1][0]) && (tokens[i + 1] != "-"))
+                {
+                    safety = false;
+                }
             }
-            else if (operators.count(tokens[0][0]) && tokens[i] != "-")
-            {
-                safety = false;
-            }
-            else if (operators.count(tokens[tokens.size() - 1][0]))
-            {
-                safety = false;
-            }
-            else if (operators.count(tokens[i][0]) && operators.count(tokens[i + 1][0]) && tokens[i + 1] != "-")
-            {
-                safety = false;
-            }
-            else if ((operators.count(tokens[i][0]) && (tokens[i + 1] == ")")) || (tokens[i] == "(") && operators.count(tokens[i + 1][0]) && (tokens[i + 1] != "-"))
-            {
-                safety = false;
+        }
+
+        if (!safety)
+        {
+            std::cout << "Give Correct expression\n";
+        }
+        else
+        {
+            std::cout << solvePostfix(postfix(tokens)) << "\n";
+        }
+    }
+}
+
+void Time ::execute(const std::vector<std::string> &args)
+{
+    if (args.size() > 1)
+    {
+        std::cout << "time takes no arguement!\n";
+        return;
+    }
+    std::time_t now = std::time(nullptr);
+    std::string datetime = std::ctime(&now);
+    datetime.pop_back();
+    std::cout << datetime << "\n";
+}
+
+void Clear ::execute(const std::vector<std::string> &args)
+{
+    if (args.size() > 1)
+    {
+        std::cout << "clear takes no arguement!\n";
+        return;
+    }
+#if defined(_WIN32) || defined(_WIN64)
+    COORD topLeft = {0, 0};
+    HANDLE console = GetStdHandle(STD_OUTPUT_HANDLE);
+    CONSOLE_SCREEN_BUFFER_INFO screen;
+    DWORD written;
+
+    GetConsoleScreenBufferInfo(console, &screen);
+    FillConsoleOutputCharacterA(
+        console, ' ', screen.dwSize.X * screen.dwSize.Y, topLeft, &written);
+    FillConsoleOutputAttribute(
+        console, FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_BLUE,
+        screen.dwSize.X * screen.dwSize.Y, topLeft, &written);
+    SetConsoleCursorPosition(console, topLeft);
+#else
+    std::cout << "\033[H\033[2J\033[3J" << std::flush;
+#endif
+}
+
+std::vector<std::string> MakeDirectory ::splitPath(const std::string &path)
+{
+    std::vector<std::string> paths;
+    std::string token;
+    for (size_t i = 0; i < path.size(); i++) {
+        if (path[i] != '/')
+            token += path[i];
+        else {
+            if (!token.empty()) {
+                paths.push_back(token);
+                token.clear();
             }
         }
     }
 
-    if (!safety)
+    if (!token.empty())
+        paths.push_back(token);
+
+    return paths;
+}
+
+void MakeDirectory ::execute(const std::vector<std::string> &args)
+{
+    if (args.size() < 2)
     {
-        std::cout << "Give Correct expression\n";
+        std::cout << "See help to know how to use forge\n";
+        return;
     }
-    else
+
+#if defined(_WIN32) || defined(_WIN64)
+    std::string tmp;
+    char newDirectory[1024];
+    for (int i = 1; i < args.size(); i++)
     {
-        std::cout << solvePostfix(postfix(tokens)) << "\n";
+        tmp += args[i];
+    }
+    std::vector<std::string> paths = splitPath(tmp);
+    std::string currentPath;
+
+    if (!tmp.empty() && tmp[0] == '/')
+        currentPath = "/";
+
+    for (size_t i = 0; i < paths.size(); ++i)
+    {
+        currentPath += paths[i];
+        if (i != paths.size() - 1)
+            currentPath += "\\";
+
+        if (mkdir(currentPath.c_str()) == -1)
+        {
+            std::cout << "Cannot create - " << tmp << "\n";
+            break;
+        }
+    }
+#else
+    size_t index = 1;
+    mode_t mode = 0755; // default permission
+    while (index < args.size() && args[index][0] == '-')
+    {
+        if (args[index] == "-a")
+        {
+            mode = 0777; // access to all
+        }
+        else if (args[index] == "-s")
+        {
+            mode = 0700; // acess to owner only
+        }
+        else
+        {
+            std::cout << "forge: unknown option " << args[index] << "'\n";
+            
+        }
+        index++;
+    }
+    if (index >= args.size())
+    {
+        std::cout << "forge: missing directory operand\n";
+        return;
+    }
+
+    std::string dirPath = args[index];
+    std::vector<std::string> paths = splitPath(dirPath);
+    std::string currentPath;
+
+    if (!dirPath.empty() && dirPath[0] == '/')
+        currentPath = "/";
+    for (size_t i = 0; i < paths.size(); ++i)
+    {
+        currentPath += paths[i];
+        if (i != paths.size() - 1)
+            currentPath += "/";
+
+        if (mkdir(currentPath.c_str()) == -1)
+        {
+            std::cout << "Cannot create - " << tmp << "\n";
+            break;
+        }
+    }
+
+#endif
+}
+
+void ChangeDirectory ::execute(const std::vector<std::string> &args)
+{
+    std::string tmp;
+    char newDirectory[256];
+    for (int i = 1; i < args.size(); i++)
+    {
+        tmp += args[i];
+    }
+    strcpy(newDirectory, tmp.c_str());
+
+    if (chdir(newDirectory)!=0)
+    {
+        std::cout << "Cannot change directory to " << tmp << "\n";
     }
 }
+
+
+void Show :: execute(const std::vector<std::string> &args){
+    DIR *dir;
+    dir = opendir(".");
+    if (dir!=nullptr){
+
+    struct dirent *entity;
+    entity = readdir(dir);
+    while (entity != nullptr)
+    {
+        std::cout << entity->d_name << " ";
+        entity = readdir(dir);
+    }
+    std::cout<<"\n";
+    closedir(dir);
+}}
