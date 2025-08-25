@@ -328,11 +328,14 @@ std::vector<std::string> MakeDirectory ::splitPath(const std::string &path)
 {
     std::vector<std::string> paths;
     std::string token;
-    for (size_t i = 0; i < path.size(); i++) {
+    for (size_t i = 0; i < path.size(); i++)
+    {
         if (path[i] != '/')
             token += path[i];
-        else {
-            if (!token.empty()) {
+        else
+        {
+            if (!token.empty())
+            {
                 paths.push_back(token);
                 token.clear();
             }
@@ -347,19 +350,14 @@ std::vector<std::string> MakeDirectory ::splitPath(const std::string &path)
 
 void MakeDirectory ::execute(const std::vector<std::string> &args)
 {
-    if (args.size() < 2)
+    if (args.size() != 2)
     {
-        std::cout << "See help to know how to use forge\n";
+        std::cout << "forge takes two arguements. See help.\n";
         return;
     }
 
 #if defined(_WIN32) || defined(_WIN64)
-    std::string tmp;
-    char newDirectory[1024];
-    for (int i = 1; i < args.size(); i++)
-    {
-        tmp += args[i];
-    }
+    std::string tmp = args[1];
     std::vector<std::string> paths = splitPath(tmp);
     std::string currentPath;
 
@@ -394,7 +392,6 @@ void MakeDirectory ::execute(const std::vector<std::string> &args)
         else
         {
             std::cout << "forge: unknown option " << args[index] << "'\n";
-            
         }
         index++;
     }
@@ -429,32 +426,89 @@ void MakeDirectory ::execute(const std::vector<std::string> &args)
 void ChangeDirectory ::execute(const std::vector<std::string> &args)
 {
     std::string tmp;
-    char newDirectory[256];
     for (int i = 1; i < args.size(); i++)
     {
         tmp += args[i];
     }
-    strcpy(newDirectory, tmp.c_str());
 
-    if (chdir(newDirectory)!=0)
+    if (chdir(tmp.c_str()) != 0)
     {
         std::cout << "Cannot change directory to " << tmp << "\n";
     }
 }
 
-
-void Show :: execute(const std::vector<std::string> &args){
-    DIR *dir;
-    dir = opendir(".");
-    if (dir!=nullptr){
+int DeleteDirectory::removeDir(std::string path)
+{
+    DIR *dir = opendir(path.c_str());
+    if (!dir) return -1;
 
     struct dirent *entity;
-    entity = readdir(dir);
-    while (entity != nullptr)
+    while ((entity = readdir(dir)) != nullptr)
     {
-        std::cout << entity->d_name << " ";
-        entity = readdir(dir);
+        if (strcmp(entity->d_name, ".") == 0 || strcmp(entity->d_name, "..") == 0)
+        {
+            continue;
+        }
+
+        std::string fullPath = path + "/" + entity->d_name;
+
+        // checking for files and folders
+        struct stat buf;
+        if (stat(fullPath.c_str(), &buf) == 0)
+        {
+            if (S_ISDIR(buf.st_mode))
+            {
+                if (removeDir(fullPath)!=0){
+                    std::cout << "Cannot delete - " << fullPath << "\n";
+                    closedir(dir);
+                    return -1;
+                }
+            }
+            else
+            {
+                if (remove(fullPath.c_str()) != 0)
+                {
+                    std::cout << "Cannot delete - " << fullPath << "\n";
+                    closedir(dir);
+                    return -1;
+                }
+            }
+        }
     }
-    std::cout<<"\n";
+
     closedir(dir);
-}}
+    return rmdir(path.c_str());
+}
+
+void DeleteDirectory::execute(const std::vector<std::string> &args)
+{
+    if (args.size() != 2)
+    {
+        std::cout << "erase takes only 2 arguements. See help.\n";
+    }
+    std::string delDirectory = args[1];
+
+    // checking and recursively deleteing file and folder using the removeDir()
+    if (removeDir(delDirectory) != 0)
+    {
+        std::cout << "Cannot delete - " << delDirectory << "\n";
+    }
+}
+
+void Show ::execute(const std::vector<std::string> &args)
+{
+    DIR *dir;
+    dir = opendir(".");
+    if (dir != nullptr)
+    {
+        struct dirent *entity;
+        entity = readdir(dir);
+        while (entity != nullptr)
+        {
+            std::cout << entity->d_name << " ";
+            entity = readdir(dir);
+        }
+        std::cout << "\n";
+        closedir(dir);
+    }
+}

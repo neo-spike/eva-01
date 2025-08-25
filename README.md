@@ -25,6 +25,7 @@ Eva-01 features:
 - [x] jump - changes working directory to the given directory
 - [x] forge - creates folders 
 - [x] show - shows all the folder and files present in the working directory
+- [x] erase - deletes the provided directory
 
 
 ---

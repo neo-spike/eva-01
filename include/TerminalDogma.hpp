@@ -9,12 +9,10 @@
 #include <ctime>
 #include <unistd.h>
 #include <dirent.h>
-#if defined(_WIN32) || defined(_WIN64)
-#include <direct.h>
-#endif
-#if defined(__linux__) || defined(__unix__) || defined(__APPLE__)
 #include <sys/stat.h>
 #include <sys/types.h>
+#if defined(_WIN32) || defined(_WIN64)
+#include <direct.h>
 #endif
 
 class CentralDogma;
@@ -98,11 +96,14 @@ class DeleteDirectory : public TerminalDogma
 {
     public:
     void execute(const std::vector<std::string> &args) override;
-    std::string description() const override { return "Changes the directory to the given directory."; };
+    std::string description() const override { return "Deletes the provided directory."; };
+    int removeDir(std::string path);
 };
 
 class Show : public TerminalDogma{
 public:
     void execute(const std::vector<std::string> &args) override;
-    std::string description() const override { return "Changes the directory to the given directory."; };
+    std::string description() const override { return "Shows all the folder and files present in the working directory."; };
 };
+
+
