@@ -4,11 +4,48 @@
 
 void Say ::execute(const std::vector<std::string> &args)
 {
-    for (size_t i = 1; i < args.size(); ++i)
+    std::string filePath;
+    if (args[args.size() - 2] == ">>" && args.size() >= 4)
     {
-        std::cout << args[i] << " ";
+        if (args[1][0] == '"' && args[args.size() - 3][args[args.size() - 3].size() - 1] == '"' )
+        {
+            filePath = args[args.size() - 1];
+        }
     }
-    std::cout << "\n";
+
+    if (filePath.size() == 0)
+    {
+        for (size_t i = 1; i < args.size(); ++i)
+        {
+            std::cout << args[i] << " ";
+        }
+        std::cout << "\n";
+    }
+    else
+    {
+        std::string userText;
+        for (size_t i = 1; i <= args.size()-3; i++)
+        {
+            for (size_t j=0; j<args[i].size(); j++){
+                if ((i==1 && j==0) || (i==args.size()-3 && j==args[args.size()-3].size()-1)){
+                    continue;
+                }
+                else{
+                    userText+=args[i][j];
+                }
+            }
+        }
+        std::cout<<userText<<"\n";
+        std::ofstream file(filePath, std::ios::app);
+        if (!file){
+            std::fstream file(filePath, std::ios::out);
+            file << userText;
+        }
+        else{
+            file<<userText;
+        }
+        file.close();
+    }
 }
 
 void Help::execute(const std::vector<std::string> &args)
@@ -163,7 +200,7 @@ long double Calculate::solvePostfix(std::vector<std::string> expression)
 void Calculate::execute(const std::vector<std::string> &args)
 {
     std::string expression;
-    for (int i = 1; i < args.size(); i++)
+    for (size_t i = 1; i < args.size(); i++)
     {
         expression += args[i];
     }
@@ -350,32 +387,36 @@ std::vector<std::string> MakeDirectory ::splitPath(const std::string &path)
 
 void MakeDirectory ::execute(const std::vector<std::string> &args)
 {
-    if (args.size() != 2)
+    if (args.size() < 2)
     {
-        std::cout << "forge takes two arguements. See help.\n";
+        std::cout << "forge takes 2 or more arguements. See help.\n";
         return;
     }
 
 #if defined(_WIN32) || defined(_WIN64)
-    std::string tmp = args[1];
-    std::vector<std::string> paths = splitPath(tmp);
-    std::string currentPath;
-
-    if (!tmp.empty() && tmp[0] == '/')
-        currentPath = "/";
-
-    for (size_t i = 0; i < paths.size(); ++i)
+    for (size_t i = 1; i < args.size(); i++)
     {
-        currentPath += paths[i];
-        if (i != paths.size() - 1)
-            currentPath += "\\";
+        std::string tmp = args[i];
+        std::vector<std::string> paths = splitPath(tmp);
+        std::string currentPath;
 
-        if (mkdir(currentPath.c_str()) == -1)
+        if (!tmp.empty() && tmp[0] == '/')
+            currentPath = "/";
+
+        for (size_t i = 0; i < paths.size(); ++i)
         {
-            std::cout << "Cannot create - " << tmp << "\n";
-            break;
+            currentPath += paths[i];
+            if (i != paths.size() - 1)
+                currentPath += "\\";
+
+            if (mkdir(currentPath.c_str()) == -1)
+            {
+                std::cout << "Cannot create - " << tmp << "\n";
+                break;
+            }
         }
     }
+
 #else
     size_t index = 1;
     mode_t mode = 0755; // default permission
@@ -400,23 +441,25 @@ void MakeDirectory ::execute(const std::vector<std::string> &args)
         std::cout << "forge: missing directory operand\n";
         return;
     }
-
-    std::string dirPath = args[index];
-    std::vector<std::string> paths = splitPath(dirPath);
-    std::string currentPath;
-
-    if (!dirPath.empty() && dirPath[0] == '/')
-        currentPath = "/";
-    for (size_t i = 0; i < paths.size(); ++i)
+    for (size_t i = index; i < args.size(); i++)
     {
-        currentPath += paths[i];
-        if (i != paths.size() - 1)
-            currentPath += "/";
+        std::string dirPath = args[i];
+        std::vector<std::string> paths = splitPath(dirPath);
+        std::string currentPath;
 
-        if (mkdir(currentPath.c_str()) == -1)
+        if (!dirPath.empty() && dirPath[0] == '/')
+            currentPath = "/";
+        for (size_t i = 0; i < paths.size(); ++i)
         {
-            std::cout << "Cannot create - " << tmp << "\n";
-            break;
+            currentPath += paths[i];
+            if (i != paths.size() - 1)
+                currentPath += "/";
+
+            if (mkdir(currentPath.c_str()) == -1)
+            {
+                std::cout << "Cannot create - " << tmp << "\n";
+                break;
+            }
         }
     }
 
@@ -437,10 +480,11 @@ void ChangeDirectory ::execute(const std::vector<std::string> &args)
     }
 }
 
-int DeleteDirectory::removeDir(std::string path)
+int Erase::removeDir(std::string path)
 {
     DIR *dir = opendir(path.c_str());
-    if (!dir) return -1;
+    if (!dir)
+        return -1;
 
     struct dirent *entity;
     while ((entity = readdir(dir)) != nullptr)
@@ -458,7 +502,8 @@ int DeleteDirectory::removeDir(std::string path)
         {
             if (S_ISDIR(buf.st_mode))
             {
-                if (removeDir(fullPath)!=0){
+                if (removeDir(fullPath) != 0)
+                {
                     std::cout << "Cannot delete - " << fullPath << "\n";
                     closedir(dir);
                     return -1;
@@ -480,35 +525,106 @@ int DeleteDirectory::removeDir(std::string path)
     return rmdir(path.c_str());
 }
 
-void DeleteDirectory::execute(const std::vector<std::string> &args)
+void Erase::execute(const std::vector<std::string> &args)
 {
-    if (args.size() != 2)
+    if (args.size() < 2)
     {
-        std::cout << "erase takes only 2 arguements. See help.\n";
+        std::cout << "erase takes 2 or more arguements. See help.\n";
     }
-    std::string delDirectory = args[1];
 
-    // checking and recursively deleteing file and folder using the removeDir()
-    if (removeDir(delDirectory) != 0)
+    for (size_t i = 1; i < args.size(); i++)
     {
-        std::cout << "Cannot delete - " << delDirectory << "\n";
+        // checking for files and folders
+        struct stat buf;
+        if (stat(args[i].c_str(), &buf) == 0)
+        {
+            if (S_ISDIR(buf.st_mode))
+            {
+                // checking and recursively deleteing file and folder using the removeDir()
+
+                if (removeDir(args[i]) != 0)
+                {
+                    std::cout << "Cannot delete - " << args[i] << "\n";
+                }
+            }
+            else
+            {
+                if (remove(args[i].c_str()) != 0)
+                {
+                    std::cout << "Cannot delete - " << args[i] << "\n";
+                }
+            }
+        }
+        else
+        {
+            std::cout << "See help.\n";
+        }
     }
 }
 
 void Show ::execute(const std::vector<std::string> &args)
 {
-    DIR *dir;
-    dir = opendir(".");
-    if (dir != nullptr)
+    if (args.size() < 2)
     {
-        struct dirent *entity;
-        entity = readdir(dir);
-        while (entity != nullptr)
+
+        char cwd[1024];
+        if (getcwd(cwd, sizeof(cwd)) != nullptr)
         {
-            std::cout << entity->d_name << " ";
-            entity = readdir(dir);
+            std::cout << "Working Directory - " << cwd << "\n";
         }
-        std::cout << "\n";
-        closedir(dir);
+
+        DIR *dir;
+        dir = opendir(".");
+        if (dir != nullptr)
+        {
+            struct dirent *entity;
+            entity = readdir(dir);
+            while (entity != nullptr)
+            {
+                std::cout << entity->d_name << " ";
+                entity = readdir(dir);
+            }
+            std::cout << "\n";
+            closedir(dir);
+        }
+    }
+    else
+    {
+        std::cout << "show takes no arguement.\n";
+    }
+}
+
+void Craft ::execute(const std::vector<std::string> &args)
+{
+    for (size_t i = 1; i < args.size(); i++)
+    {
+        // checking if the file exists
+        std::fstream file(args[i], std::ios::in);
+        if (!file.is_open())
+        {
+            std::ofstream file(args[i]);
+        }
+        file.close();
+    }
+}
+
+void View ::execute(const std::vector<std::string> &args)
+{
+    for (size_t i = 1; i < args.size(); i++)
+    {
+        std::fstream file(args[i], std::ios::in);
+        if (file.is_open())
+        {
+            std::cout << args[i] << " - \n";
+            std::ifstream file(args[i]);
+            std::string line;
+            while (std::getline(file, line))
+                std::cout << line << "\n";
+        }
+        else
+        {
+            std::cout << args[i] << " - doesn't exists!\n";
+        }
+        file.close();
     }
 }

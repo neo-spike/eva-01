@@ -11,6 +11,7 @@
 #include <dirent.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <fstream>
 #if defined(_WIN32) || defined(_WIN64)
 #include <direct.h>
 #endif
@@ -29,7 +30,7 @@ class Say : public TerminalDogma
 {
 public:
     void execute(const std::vector<std::string> &args) override;
-    std::string description() const override { return "Prints text to the console"; }
+    std::string description() const override { return "Prints text to the console and also write and appends text into files which are in double quotes only \n\t and ends with >> and file name with proper space. say <text> or say <\"text\"> >> <filename>"; }
 };
 
 class Help : public TerminalDogma
@@ -92,18 +93,31 @@ public:
     std::string description() const override { return "Changes the directory to the given directory."; };
 };
 
-class DeleteDirectory : public TerminalDogma
+class Erase : public TerminalDogma
 {
-    public:
+public:
     void execute(const std::vector<std::string> &args) override;
-    std::string description() const override { return "Deletes the provided directory."; };
+    std::string description() const override { return "Deletes the provided files and folders. erase <file1> <folder1> <file2> <...>"; };
     int removeDir(std::string path);
 };
 
-class Show : public TerminalDogma{
+class Show : public TerminalDogma
+{
 public:
     void execute(const std::vector<std::string> &args) override;
     std::string description() const override { return "Shows all the folder and files present in the working directory."; };
 };
 
+class Craft : public TerminalDogma
+{
+public:
+    void execute(const std::vector<std::string> &args) override;
+    std::string description() const override { return "Creates files only. craft <file1> <file2> <...>"; };
+};
 
+class View : public TerminalDogma
+{
+public:
+    void execute(const std::vector<std::string> &args) override;
+    std::string description() const override { return "Displays the content of the files. view <file1> <file2> <...>"; };
+};

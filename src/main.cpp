@@ -36,7 +36,9 @@ int main(){
     core.registerCommand("jump", std::make_unique<ChangeDirectory>());
     core.registerCommand("forge", std::make_unique<MakeDirectory>());
     core.registerCommand("show", std::make_unique<Show>());
-    core.registerCommand("erase", std::make_unique<DeleteDirectory>());
+    core.registerCommand("erase", std::make_unique<Erase>());
+    core.registerCommand("craft", std::make_unique<Craft>());
+    core.registerCommand("view", std::make_unique<View>());
 
     // getting credentials
     std::string username, password;
