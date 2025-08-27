@@ -23,13 +23,18 @@ Eva-01 features:
 
 ### ✅ Completed Features
 
-- [x] help - gives list and description of all the available commands
-- [x] say - Prints text to the console and also write and appends text into files which are in double quotes only and ends with >> and file name with proper space. say <text> or say <\"text\"> >> <filename>
-- [x] calc - inline calculator
-- [x] jump - changes working directory to the given directory
-- [x] forge - creates folders
-- [x] show - shows all the folder and files present in the working directory
-- [x] erase - deletes the provided directory
+- [x] view - Displays the content of the files. `view <file1> <file2> <...>`
+- [x] time - It just shows you the time.
+- [x] forge - It makes directory. Command - `forge <directory1> <directory2> <...>`
+- [x] calc - Just a simple calculator.
+- [x] say - Prints text to the console and also write and appends text into files which are in double quotes only
+         and ends with >> and file name with proper space. `say <text>` or `say <"text"> >> <filename>`
+- [x] clear - Clears the console.
+- [x] show - Shows all the folder and files present in the working directory.
+- [x] jump - Changes the directory to the given directory.
+- [x] help - Gives information about the commands
+- [x] erase - Deletes the provided files and folders. `erase <file1> <folder1> <file2> <...>`
+- [x] craft - Creates files only. `craft <file1> <file2> <...>`
 
 ---
 

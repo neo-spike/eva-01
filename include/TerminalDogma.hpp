@@ -78,9 +78,9 @@ public:
     std::string description() const override
     {
 #if defined(_WIN32) || defined(_WIN64)
-        return "It makes directory. Command - forge <directory>";
+        return "It makes directory. Command - forge <directory1> <directory2> <...>";
 #else
-        return "It makes directory. Command - forge [-a|-s] <directory>";
+        return "It makes directory. Command - forge [-a|-s] <directory1> <directory2> <...>";
 #endif
     };
     std::vector<std::string> splitPath(const std::string &path);
