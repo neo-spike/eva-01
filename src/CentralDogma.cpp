@@ -18,6 +18,7 @@ CentralDogma::CentralDogma()
         username = std::string(hostname);
     }
 #endif
+    currentHistory = historyList.end();
 }
 
 void CentralDogma::registerCommand(const std::string &name, std::unique_ptr<TerminalDogma> cmd)
@@ -56,4 +57,19 @@ std::string CentralDogma::workingDirectory()
         return lastDir;
     }
     return "";
+}
+
+bool CentralDogma::parseCommand(const std::vector<std::string>& args){
+    if (args.empty()) return true;
+    if (!executeCommand(args[0], args)){
+        return false;
+    }
+    else{
+        addToHistory(args);
+        return true;
+    }
+}
+
+void CentralDogma::addToHistory(const std::vector<std::string>& args){
+    
 }

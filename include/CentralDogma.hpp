@@ -4,6 +4,7 @@
 #include <vector>
 #include <cstdlib>
 #include <fstream> 
+#include <list>
 #if defined(_WIN32) || defined(_WIN64)
     #include <windows.h>
 #else
@@ -16,6 +17,13 @@ class TerminalDogma;
 class CentralDogma{
 private:
     std::unordered_map<std::string, std::unique_ptr<TerminalDogma>> registry;
+
+    // history parts
+    std::list<std::vector<std::string>> historyList;
+    // Iterator to navigate history using ↑ and ↓
+    std::list<std::vector<std::string>>::iterator currentHistory;
+    std::unordered_map<std::string, std::vector<std::list<std::vector<std::string>>::iterator>> historyIndex;
+
     std::string configPath;
     std::string username="";
 
@@ -30,5 +38,8 @@ public:
     }
     std::string getUsername();
     std::string workingDirectory();
+    bool parseCommand(const std::vector<std::string>& args);
 
+    // history functions
+    void addToHistory(const std::vector<std::string>& args);
 };

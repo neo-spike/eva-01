@@ -628,3 +628,15 @@ void View ::execute(const std::vector<std::string> &args)
         file.close();
     }
 }
+
+void Shift :: execute(const std::vector<std::string> &args){
+    if (args.size()!=3){
+        std::cout<<"shift takes 3 arguements\n";
+    }
+    std::string src = args[1];
+    std::string dest = args[2];
+
+    if (rename(src.c_str(), dest.c_str())!=0){
+        std::cout<<"Unable to do the operation\n";
+    }
+}

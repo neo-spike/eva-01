@@ -39,6 +39,7 @@ int main(){
     core.registerCommand("erase", std::make_unique<Erase>());
     core.registerCommand("craft", std::make_unique<Craft>());
     core.registerCommand("view", std::make_unique<View>());
+    core.registerCommand("shift", std::make_unique<Shift>());
 
     // getting credentials
     std::string username, password;
@@ -56,7 +57,7 @@ int main(){
 
         if (args[0] == "exit") break;
 
-        if (!core.executeCommand(args[0], args)) {
+        if (!core.parseCommand(args)) {
             std::cout << "Unknown command: " << args[0] << "\n";
         }
     }
