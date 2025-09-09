@@ -40,6 +40,8 @@ int main(){
     core.registerCommand("craft", std::make_unique<Craft>());
     core.registerCommand("view", std::make_unique<View>());
     core.registerCommand("shift", std::make_unique<Shift>());
+    core.registerCommand("history", std::make_unique<History>(core));
+
 
     // getting credentials
     std::string username, password;

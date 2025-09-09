@@ -19,13 +19,10 @@ private:
     std::unordered_map<std::string, std::unique_ptr<TerminalDogma>> registry;
 
     // history parts
-    std::list<std::vector<std::string>> historyList;
-    // Iterator to navigate history using ↑ and ↓
-    std::list<std::vector<std::string>>::iterator currentHistory;
-    std::unordered_map<std::string, std::vector<std::list<std::vector<std::string>>::iterator>> historyIndex;
+    std::vector<std::vector<std::string>> historyList;
 
     std::string configPath;
-    std::string username="";
+    std::string username;
 
 public:
     CentralDogma();
@@ -42,4 +39,6 @@ public:
 
     // history functions
     void addToHistory(const std::vector<std::string>& args);
+    std::vector<std::vector<std::string>> getHistory();
+    void searchHistory(const std::string& cmdName);
 };

@@ -640,3 +640,23 @@ void Shift :: execute(const std::vector<std::string> &args){
         std::cout<<"Unable to do the operation\n";
     }
 }
+
+void History :: execute(const std::vector<std::string> &args){
+    if (args.size()>=2){
+        for (int i=1; i<args.size(); i++){
+            core.searchHistory(args[i]);
+        }
+    }else{
+        std::vector<std::vector<std::string>> commandList = core.getHistory();
+        for (int i = 0; i < commandList.size(); i++)
+        {
+            std::cout<<i+1<<".  ";
+            for (int j = 0; j < commandList[i].size(); j++)
+            {
+                std::cout<<commandList[i][j]<<" ";
+            }
+            std::cout<<"\n";
+        }
+        
+    }
+}

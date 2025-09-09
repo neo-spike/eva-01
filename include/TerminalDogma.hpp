@@ -133,5 +133,5 @@ class History : public TerminalDogma{
 public:
     History(CentralDogma &c) : core(c) {};
     void execute(const std::vector<std::string> &args) override;
-    std::string description() const override { return "Moves and renames files/folders. shift <file1> <folder1/file1> or shift <folder2/folder3> <folder4/folder3>.\n\tYou need to give the name of the file/folder along with the destination you want to move.\n\tFor renaming you just need to give a new name in the second arguement."; };
+    std::string description() const override {return "Searches commands from history.";};
 };

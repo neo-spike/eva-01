@@ -18,7 +18,6 @@ CentralDogma::CentralDogma()
         username = std::string(hostname);
     }
 #endif
-    currentHistory = historyList.end();
 }
 
 void CentralDogma::registerCommand(const std::string &name, std::unique_ptr<TerminalDogma> cmd)
@@ -37,7 +36,8 @@ bool CentralDogma::executeCommand(const std::string &name, const std::vector<std
     return false;
 }
 
-std::string CentralDogma::getUsername(){
+std::string CentralDogma::getUsername()
+{
     return username;
 }
 
@@ -49,27 +49,149 @@ std::string CentralDogma::workingDirectory()
         std::string path = cwd;
         size_t pos = path.find_last_of("/\\");
         std::string lastDir;
-        if (pos != std::string::npos) {
-            lastDir = path.substr(pos + 1); 
-        } else {
-            lastDir = path; 
+        if (pos != std::string::npos)
+        {
+            lastDir = path.substr(pos + 1);
+        }
+        else
+        {
+            lastDir = path;
         }
         return lastDir;
     }
     return "";
 }
 
-bool CentralDogma::parseCommand(const std::vector<std::string>& args){
-    if (args.empty()) return true;
-    if (!executeCommand(args[0], args)){
-        return false;
-    }
-    else{
-        addToHistory(args);
-        return true;
-    }
+void CentralDogma::addToHistory(const std::vector<std::string> &args)
+{
+
+    historyList.push_back(args);
 }
 
-void CentralDogma::addToHistory(const std::vector<std::string>& args){
+bool CentralDogma::parseCommand(const std::vector<std::string> &args)
+{
+    if (args.empty())
+        return true;
+
+    std::vector<std::vector<std::string>> commands;
+    std::vector<std::string> commandOperators;
+    std::vector<std::string> currentCommand;
+    std::string currentToken;
+
+    bool insideQuotes = false;
+
+    // ; - executes all commands, || - run the second command only if first fails, && - run the second if the first succeeds
+
+    for (const std::string &token : args)
+    {
+        size_t i = 0;
+        while (i < token.size()) {
+            char c = token[i];
+
+            if (c == '"' && !insideQuotes) {
+                insideQuotes = true;
+                i++;
+                continue;
+            } else if (c == '"' && insideQuotes) {
+                insideQuotes = false;
+                i++;
+                continue;
+            }
+
+
+            if (!insideQuotes){
+                if (i+1<token.size() && ((token[i] == '&' && token[i + 1] == '&') || (token[i] == '|' && token[i + 1] == '|') || (token[i] == '>' && token[i + 1] == '>'))){
+                    if (!currentToken.empty()) {
+                        currentCommand.push_back(currentToken);
+                        currentToken.clear();
+                    }
+                    if (!currentCommand.empty()) {
+                        commands.push_back(currentCommand);
+                        currentCommand.clear();
+                    }
+                    commandOperators.push_back(token.substr(i, 2));
+                    i += 2;
+                    continue;
+                }
+                if (token[i] == ';') {
+                    if (!currentToken.empty()) {
+                        currentCommand.push_back(currentToken);
+                        currentToken.clear();
+                    }
+
+                    if (!currentCommand.empty()) {
+                        commands.push_back(currentCommand);
+                        currentCommand.clear();
+                    }
+
+                    commandOperators.push_back(";");
+                    i++;
+                    continue;
+                }
+            }
+            currentToken.push_back(c);
+            i++;
+        }
+
+        if (insideQuotes) {
+            // Inside quotes → add a space to join with next token
+            currentToken.push_back(' ');
+        } else {
+            if (!currentToken.empty()) {
+                currentCommand.push_back(currentToken);
+                currentToken.clear();
+            }
+        }
+    }
+
+    if (!currentToken.empty()) {
+        currentCommand.push_back(currentToken);
+        currentToken.clear();
+    }
+    if (!currentCommand.empty()) {
+        commands.push_back(currentCommand);
+    }
+
+    for (size_t i = 0; i < commands.size(); i++)
+    {
+        for (size_t j = 0; j < commands[i].size(); j++)
+        {
+            std::cout<<commands[i][j]<<" ";
+        }
+        std::cout<<"\n";
+        
+    }
     
+
+    // if (!executeCommand(args[0], args))
+    // {
+    //     addToHistory(args);
+    //     return false;
+    // }
+    // else
+    // {
+    //     addToHistory(args);
+    //     return true;
+    // }
+}
+
+std::vector<std::vector<std::string>> CentralDogma::getHistory()
+{
+    return historyList;
+}
+
+void CentralDogma::searchHistory(const std::string &cmdName)
+{
+    for (int i = 0; i < historyList.size(); i++)
+    {
+        if (historyList[i][0] == cmdName)
+        {
+            std::cout << i + 1 << ". ";
+            for (int j = 0; j < historyList[i].size(); j++)
+            {
+                std::cout << historyList[i][j] << " ";
+            }
+            std::cout << "\n";
+        }
+    }
 }
