@@ -2,7 +2,7 @@
 #include "CentralDogma.hpp"
 #include <iostream>
 
-void Say ::execute(const std::vector<std::string> &args)
+void Say ::execute(const std::vector<std::string> &args,std::string fileName="")
 {
     std::string filePath;
     if (args[args.size() - 2] == ">>" && args.size() >= 4)
@@ -48,7 +48,7 @@ void Say ::execute(const std::vector<std::string> &args)
     }
 }
 
-void Help::execute(const std::vector<std::string> &args)
+void Help::execute(const std::vector<std::string> &args,std::string fileName="")
 {
     std::cout << "Available commands:\n";
     for (const auto &name : core.getRegistry())
@@ -197,7 +197,7 @@ long double Calculate::solvePostfix(std::vector<std::string> expression)
     return st.top();
 }
 
-void Calculate::execute(const std::vector<std::string> &args)
+void Calculate::execute(const std::vector<std::string> &args,std::string fileName="")
 {
     std::string expression;
     for (size_t i = 1; i < args.size(); i++)
@@ -323,7 +323,7 @@ void Calculate::execute(const std::vector<std::string> &args)
     }
 }
 
-void Time ::execute(const std::vector<std::string> &args)
+void Time ::execute(const std::vector<std::string> &args,std::string fileName="")
 {
     if (args.size() > 1)
     {
@@ -336,7 +336,7 @@ void Time ::execute(const std::vector<std::string> &args)
     std::cout << datetime << "\n";
 }
 
-void Clear ::execute(const std::vector<std::string> &args)
+void Clear ::execute(const std::vector<std::string> &args,std::string fileName="")
 {
     if (args.size() > 1)
     {
@@ -385,7 +385,7 @@ std::vector<std::string> MakeDirectory ::splitPath(const std::string &path)
     return paths;
 }
 
-void MakeDirectory ::execute(const std::vector<std::string> &args)
+void MakeDirectory ::execute(const std::vector<std::string> &args,std::string fileName="")
 {
     if (args.size() < 2)
     {
@@ -466,7 +466,7 @@ void MakeDirectory ::execute(const std::vector<std::string> &args)
 #endif
 }
 
-void ChangeDirectory ::execute(const std::vector<std::string> &args)
+void ChangeDirectory ::execute(const std::vector<std::string> &args,std::string fileName="")
 {
     std::string tmp;
     for (int i = 1; i < args.size(); i++)
@@ -525,7 +525,7 @@ int Erase::removeDir(std::string path)
     return rmdir(path.c_str());
 }
 
-void Erase::execute(const std::vector<std::string> &args)
+void Erase::execute(const std::vector<std::string> &args,std::string fileName="")
 {
     if (args.size() < 2)
     {
@@ -562,7 +562,7 @@ void Erase::execute(const std::vector<std::string> &args)
     }
 }
 
-void Show ::execute(const std::vector<std::string> &args)
+void Show ::execute(const std::vector<std::string> &args,std::string fileName="")
 {
     if (args.size() < 2)
     {
@@ -594,7 +594,7 @@ void Show ::execute(const std::vector<std::string> &args)
     }
 }
 
-void Craft ::execute(const std::vector<std::string> &args)
+void Craft ::execute(const std::vector<std::string> &args,std::string fileName="")
 {
     for (size_t i = 1; i < args.size(); i++)
     {
@@ -608,7 +608,7 @@ void Craft ::execute(const std::vector<std::string> &args)
     }
 }
 
-void View ::execute(const std::vector<std::string> &args)
+void View ::execute(const std::vector<std::string> &args,std::string fileName="")
 {
     for (size_t i = 1; i < args.size(); i++)
     {
@@ -629,7 +629,7 @@ void View ::execute(const std::vector<std::string> &args)
     }
 }
 
-void Shift :: execute(const std::vector<std::string> &args){
+void Shift :: execute(const std::vector<std::string> &args,std::string fileName=""){
     if (args.size()!=3){
         std::cout<<"shift takes 3 arguements\n";
     }
@@ -641,7 +641,7 @@ void Shift :: execute(const std::vector<std::string> &args){
     }
 }
 
-void History :: execute(const std::vector<std::string> &args){
+void History :: execute(const std::vector<std::string> &args,std::string fileName=""){
     if (args.size()>=2){
         for (int i=1; i<args.size(); i++){
             core.searchHistory(args[i]);
